@@ -610,7 +610,7 @@ This Power BI solution demonstrates how insurance organizations can move from ra
 
 ### 🎥 Project Presentation
 
-**[Watch Video Presentation](VIDEO_LINK)**
+**[Watch Video Presentation](https://www.linkedin.com/feed/update/urn:li:activity:7508604542343819266/)**
 
 ---
 
