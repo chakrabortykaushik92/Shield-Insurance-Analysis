@@ -173,15 +173,10 @@ Data preparation was performed using **Microsoft Excel and Power Query**.
 ### Key transformations
 
 1. Removed empty columns from the `fact_settlements` table.
-2. Split the `sales_mode` column in `fact_premiums` using `-` as the delimiter.
-3. Created separate fields for:
-
-   * Online/Offline Mode
-   * Sales Medium
-4. Renamed transformed columns for improved readability.
-5. Reviewed and corrected data types across tables.
-6. Converted settlement percentage values into the appropriate numerical format.
-7. Created calculated columns and measures required for dashboard analysis.
+2. Renamed transformed columns for improved readability.
+3. Reviewed and corrected data types across tables.
+4. Converted settlement percentage values into the appropriate numerical format.
+5. Created calculated columns and measures required for dashboard analysis.
 
 ---
 
@@ -611,7 +606,7 @@ This Power BI solution demonstrates how insurance organizations can move from ra
 
 ### 📊 Live Power BI Dashboard
 
-**[View Live Dashboard](ATTACHED_LINK)**
+**[View Live Dashboard](https://app.powerbi.com/view?r=eyJrIjoiYTBhY2Y4ZWMtYzU4NC00NGY2LWI3YTMtZjU3NTRkZTgzMDI3IiwidCI6ImM2ZTU0OWIzLTVmNDUtNDAzMi1hYWU5LWQ0MjQ0ZGM1YjJjNCJ9)**
 
 ### 🎥 Project Presentation
 
