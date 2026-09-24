@@ -209,11 +209,10 @@ dim_date ───────── fact_premiums
 
 ### DRG (Daily Revenue Growth):
 
- Calculated by dividing the revenue generated on the latest available date by the revenue generated on the corresponding date of the previous month.
-
+ Measures the average daily revenue generated during a specific month. It is calculated by dividing the **total revenue for the month by the number of unique dates** in that month.
 ### DCG (Daily Customer Growth):
 
- Calculated by dividing the customer count on the latest available date by the customer count on the corresponding date of the previous month.
+ Daily Customer Growth:** Measures the average number of new customers acquired per day during a specific month. It is calculated by dividing the **total new customers acquired during the month by the number of unique dates** in that month.
 
 These metrics help identify short-term changes in revenue performance and customer acquisition.
 
@@ -259,26 +258,45 @@ RELATED(fact_settlements[settlement %])
 
 ---
 
-# 📊 Core Measures
 
-### Total Customers
+# 🧮 DAX Measures
+
+### 1. Total Customers
+
+Calculates the distinct number of customers.
 
 ```DAX
 total_customer =
 DISTINCTCOUNT(dim_customer[customer_code])
 ```
 
-### Total Revenue
+### 2. Total Revenue
+
+Calculates the total premium revenue generated.
 
 ```DAX
 total_revenue =
 SUM(fact_premiums[final_premium_amt(INR)])
 ```
 
-### Customer Change %
+### 3. Previous Month Customers
+
+Returns the customer count for the previous month.
 
 ```DAX
-customer_chg % =
+customer_lastmonth =
+CALCULATE(
+    [total_customer],
+    PREVIOUSMONTH(dim_date[date])
+)
+```
+
+### 4. Customer Change %
+
+Calculates the month-over-month percentage change in customers.
+
+```DAX
+customer_change % =
 DIVIDE(
     [total_customer] - [customer_lastmonth],
     [customer_lastmonth],
@@ -286,94 +304,106 @@ DIVIDE(
 )
 ```
 
-### Previous Month Customers
+### 5. Daily Customer Growth (DCG)
+
+Calculates the average number of customers per active date within the selected period.
 
 ```DAX
-customer_lastmonth =
+DCG =
+VAR date_count =
+    DISTINCTCOUNT(dim_date[date])
+RETURN
+    DIVIDE(
+        [total_customer],
+        date_count,
+        0
+    )
+```
+
+### 6. Previous Month DCG
+
+Returns the DCG value for the previous month.
+
+```DAX
+LM_DCG =
 CALCULATE(
-    [total_customer],
-    DATEADD(dim_date[date], -1, MONTH)
+    [DCG],
+    PREVIOUSMONTH(dim_date[date])
 )
 ```
 
-### Daily Customer Growth Rate
+### 7. DCG Change %
+
+Calculates the month-over-month percentage change in Daily Customer Growth.
 
 ```DAX
-daily_customer_growth_rate =
-VAR previous_day_customer_count =
-    CALCULATE(
-        [total_customer],
-        DATEADD(dim_date[date], -1, DAY)
-    )
-RETURN
-    DIVIDE(
-        [total_customer] - previous_day_customer_count,
-        previous_day_customer_count,
-        0
-    )
-```
-
-### Daily Revenue Growth Rate
-
-```DAX
-daily_revenue_growth_rate =
-VAR previous_day_revenue =
-    CALCULATE(
-        [total_revenue],
-        DATEADD(dim_date[date], -1, DAY)
-    )
-RETURN
-    DIVIDE(
-        [total_revenue] - previous_day_revenue,
-        previous_day_revenue,
-        0
-    )
-```
-
-### Expected Settlement
-
-```DAX
-excepted_settlement =
-ROUND(
-    SUMX(
-        fact_premiums,
-        fact_premiums[final_premium_amt(INR)]
-            * (1 + RELATED(dim_customer[settlement_in_decimal]))
-    ),
+DCG_change_% =
+DIVIDE(
+    [DCG] - [LM_DCG],
+    [LM_DCG],
     0
 )
 ```
 
-### Latest Day Customer Count
+### 8. Daily Revenue Growth (DRG)
+
+Calculates the average daily revenue generated within the selected period.
 
 ```DAX
-latest_day_customer =
-VAR maxdate =
-    MAX(dim_date[date])
+DRG =
+VAR date_count =
+    DISTINCTCOUNT(dim_date[date])
 RETURN
-    CALCULATE(
-        [total_customer],
-        dim_date[date] = maxdate
-    )
-```
-
-### Latest Day Revenue
-
-```DAX
-latest_day_revenue =
-VAR maxdate =
-    MAX(dim_date[date])
-RETURN
-    CALCULATE(
+    DIVIDE(
         [total_revenue],
-        dim_date[date] = maxdate
+        date_count,
+        0
     )
 ```
 
-### Revenue Change %
+### 9. Previous Month DRG
+
+Returns the DRG value for the previous month.
 
 ```DAX
-revenue_chg % =
+LM_DRG =
+CALCULATE(
+    [DRG],
+    PREVIOUSMONTH(dim_date[date])
+)
+```
+
+### 10. DRG Change %
+
+Calculates the month-over-month percentage change in Daily Revenue Growth.
+
+```DAX
+DRG_change_% =
+DIVIDE(
+    [DRG] - [LM_DRG],
+    [LM_DRG],
+    0
+)
+```
+
+### 11. Previous Month Revenue
+
+Returns the total revenue for the previous month.
+
+```DAX
+revenue_lastmonth =
+CALCULATE(
+    [total_revenue],
+    PREVIOUSMONTH(dim_date[date])
+)
+```
+
+### 12. Revenue Change %
+
+Calculates the month-over-month percentage change in revenue.
+
+```DAX
+revenue_change % =
 DIVIDE(
     [total_revenue] - [revenue_lastmonth],
     [revenue_lastmonth],
@@ -381,17 +411,9 @@ DIVIDE(
 )
 ```
 
-### Previous Month Revenue
+### 13. Revenue Share by Age Group
 
-```DAX
-revenue_lastmonth =
-CALCULATE(
-    [total_revenue],
-    DATEADD(dim_date[date], -1, MONTH)
-)
-```
-
-### Revenue Share by Age Group
+Calculates each age group's contribution to total revenue.
 
 ```DAX
 revenue_share_by_age_group =
@@ -405,7 +427,40 @@ DIVIDE(
 )
 ```
 
----
+### 14. Expected Settlement
+
+Calculates the expected settlement amount by applying the settlement percentage to the premium amount.
+
+```DAX
+expected_settlement =
+ROUND(
+    SUMX(
+        fact_premiums,
+        fact_premiums[final_premium_amt(INR)]
+            * (1 + RELATED(dim_customer[settlement_in_decimal]))
+    ),
+    0
+)
+```
+
+### 15. Selected Value
+
+Dynamically switches between the selected metric and total revenue when no metric is selected.
+
+```DAX
+Selected Value =
+VAR SelectedMetric =
+    SELECTEDVALUE(
+        'Customer/Revenue Parameter'[Parameter Fields]
+    )
+RETURN
+    IF(
+        ISBLANK(SelectedMetric),
+        [total_revenue],
+        SelectedMetric
+    )
+```
+
 
 # 📈 Dashboard Features
 
